@@ -1,23 +1,68 @@
 const gameBoard = (() => {
-  const boardArr = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+  const boardArr = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
   const getBoard = () => boardArr;
-
-  return { getBoard };
-})();
-
-const displayController = (() => {
-  const boardDiv = document.getElementsByClassName(".game-board");
-
-  const display = () => {
-    boardDiv.innerHTML = `Test`;
+  const setBoard = (index, marker) => {
+    boardArr[index] = marker;
   };
 
-  return {display};
+  return { getBoard, setBoard };
 })();
 
-const playerFactoryconst = (name) => {
+const displayController = ((doc) => {
+  const tiles = Array.from(doc.getElementsByClassName('tile'));
+
+  const displayToDOM = () => {
+    if (!!doc && 'querySelector' in doc) {
+      tiles.forEach((tile, i) => {
+        const chosenTile = tile;
+        chosenTile.textContent = gameBoard.getBoard()[i];
+      });
+    }
+  };
+
+  const changeMarker = (tile, marker) => {
+    const chosenTile = tile;
+    chosenTile.textContent = marker;
+  };
+
+  return { displayToDOM, changeMarker };
+})(document);
+
+const playerFactory = (name, marker) => {
   const getName = () => name;
-  return { name, getName };
+  const getMarker = () => marker;
+  return { getName, getMarker };
 };
 
-displayController.display()
+const game = (doc) => {
+  const player1 = playerFactory('Ahana', 'X');
+  const player2 = playerFactory('Chander', 'O');
+  const tiles = Array.from(doc.getElementsByClassName('tile'));
+  let currentPlayer = player1;
+
+  displayController.displayToDOM();
+
+  const switchPlayer = () => {
+    currentPlayer = currentPlayer === player1 ? player2 : player1;
+  };
+
+  const round = (element) => {
+    const chosenTile = element;
+    const markerPosition = chosenTile.dataset.index;
+
+    displayController.displayToDOM();
+    displayController.changeMarker(chosenTile, currentPlayer.getMarker());
+    gameBoard.setBoard(markerPosition - 1, currentPlayer.getMarker());
+    switchPlayer();
+  };
+
+  if (!!doc && 'querySelector' in doc) {
+    tiles.forEach((tile) => {
+      tile.addEventListener('click', () => {
+        round(tile);
+      });
+    });
+  }
+};
+
+game(document);
